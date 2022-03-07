@@ -21,6 +21,8 @@ describe("starting tests for dai", function () {
     let address_having_aave_tokens = "0xddfAbCdc4D8FfC6d5beaf154f18B778f892A0740";
     let address_having_no_aave_tokens = public_address;
     let contract;
+    let contract2;
+    let check;
 
   
     before(async () =>{
@@ -88,24 +90,19 @@ describe("starting tests for dai", function () {
             let DOMAIN_SEPARATOR = await contract.methods.DOMAIN_SEPARATOR().call();
 
             // generating the hash to sign using private key, the hash will be similar to the one that will be sent as a message in permit function 
-            const encoded = web3.eth.abi.encodeParameters(['bytes32', 'address', 'address', 'uint256', 'uint256', 'uint256'],[PERMIT_TYPEHASH, my_account.address, our_deployed_contract.address, currentValidNonce, deadline, value]);
+            const encoded = web3.eth.abi.encodeParameters(['bytes32', 'address', 'address', 'uint256', 'uint256', 'bool'],[PERMIT_TYPEHASH, my_account.address, our_deployed_contract.address, currentValidNonce, deadline, true]);
             const hash = web3.utils.keccak256(encoded, {encoding: 'hex'});
 
             const hash1_for_encodePacked = soliditySha3('\x19\x01', DOMAIN_SEPARATOR, hash);
             console.log("The hash that will be signed using private key: ", hash1_for_encodePacked);
 
 
-            console.log(PERMIT_TYPEHASH);
-            console.log(currentValidNonce);
-            console.log(DOMAIN_SEPARATOR);
             //getting the r ,s ,v from the signature which will be passed as arguments in permit function
             const { v, r, s } = EthUtil.ecsign(Buffer.from(hash1_for_encodePacked.slice(2), 'hex'), Buffer.from(private_key.slice(2), 'hex'));
 
             //the sender calls permit function to take the allowance of fund transfer from the my_account(me) (Remember that they were interchanged)
-            await our_deployed_contract.connect(account_with_funds).depositWithPermit(dai_token_address,my_account.address,currentValidNonce,deadline,value,v, hexlify(r), hexlify(s));
-            
-            //console.log("Permission granted by me to the sender to transfer funds");
-            //console.log("The transaction has been made using permit and transfer functions")
+            await our_deployed_contract.depositWithPermit(dai_token_address,my_account.address,currentValidNonce,value,deadline,v, hexlify(r), hexlify(s));
+            console.log("The funds have been deposited to our contract through depositWithPermit function");
 
 
             //getting the finla balances
