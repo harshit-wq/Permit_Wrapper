@@ -6,10 +6,10 @@ import "./interface.sol";
 import "hardhat/console.sol";
 
 contract main {
-
+    address dai_address = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     function depositWithPermit(address _asset,address _owner, uint256 nonce, uint256 _amount, uint256 _deadline, uint8 v, bytes32 r, bytes32 s) external {
         
-        if(_asset==0x6B175474E89094C44Da98b954EedeAC495271d0F){
+        if(_asset==dai_address){
             ERC20_dai_functions token = ERC20_dai_functions(_asset);
 
             token.permit(_owner, address(this), nonce, _deadline, true, v, r, s);
